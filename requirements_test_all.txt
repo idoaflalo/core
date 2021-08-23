@@ -250,6 +250,9 @@ auroranoaa==0.0.2
 # homeassistant.components.aurora_abb_powerone
 aurorapy==0.2.6
 
+# homeassistant.components.moen
+awsiotsdk==1.6.2
+
 # homeassistant.components.axis
 axis==44
 
@@ -276,6 +279,9 @@ bond-api==0.1.15
 
 # homeassistant.components.bosch_shc
 boschshcpy==0.2.19
+
+# homeassistant.components.moen
+boto3==1.18.19
 
 # homeassistant.components.braviatv
 bravia-tv==1.0.11

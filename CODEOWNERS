@@ -326,6 +326,7 @@ homeassistant/components/mobile_app/* @robbiet480
 homeassistant/components/modbus/* @adamchengtkc @janiversen @vzahradnik
 homeassistant/components/modem_callerid/* @tkdrob
 homeassistant/components/modern_forms/* @wonderslug
+homeassistant/components/moen/* @idoaflalo
 homeassistant/components/monoprice/* @etsinko @OnFreund
 homeassistant/components/moon/* @fabaff
 homeassistant/components/motion_blinds/* @starkillerOG

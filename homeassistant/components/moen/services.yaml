@@ -1,0 +1,20 @@
+send_payload:
+  name: Send Payload
+  description: Send a payload to the fuacet
+  target:
+    entity:
+      integration: moen
+      domain: switch
+  fields:
+    payload:
+      name: Payload
+      required: true
+      description: A JSON payload to send to the faucet
+      example: |
+        {
+          "volume": 60000,
+          "command": "dispense",
+          "commandSrc": "app"
+        }
+      selector:
+        object:

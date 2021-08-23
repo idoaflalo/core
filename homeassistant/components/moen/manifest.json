@@ -1,0 +1,18 @@
+{
+  "domain": "moen",
+  "name": "Moen",
+  "config_flow": true,
+  "documentation": "https://www.home-assistant.io/integrations/moen",
+  "requirements": [
+    "awsiotsdk==1.6.2",
+    "boto3==1.18.19"
+  ],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": [
+    "@idoaflalo"
+  ],
+  "iot_class": "cloud_push"
+}

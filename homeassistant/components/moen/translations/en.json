@@ -1,0 +1,21 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "title_too_short": "The Title must contain at least 3 characters",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "title": "Title",
+                    "password": "Password",
+                    "username": "Username"
+                }
+            }
+        }
+    }
+}
