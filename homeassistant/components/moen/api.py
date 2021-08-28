@@ -1,5 +1,6 @@
 """Api for Moen integration."""
 import json
+import threading
 from typing import Callable, Tuple
 import uuid
 
@@ -16,6 +17,7 @@ from .const import (
     COGNITO_IDP,
     ENDPOINT,
     IDENTITY_POOL_ID,
+    REFRESH_TOKEN_INTERVAL,
     REGION_NAME,
     USER_POOL_ID,
 )
@@ -38,11 +40,7 @@ class MoenApi:
             access_key_id,
             secret_access_key,
             session_token,
-        ) = self.authenticate()
-
-        self._lambda_client = self._create_lambda_client(
-            access_key_id, secret_access_key, session_token
-        )
+        ) = self._start_refresh_credentials()
 
         self._mqtt_connection = self._create_mqtt_connection(
             access_key_id, secret_access_key, session_token
@@ -113,6 +111,14 @@ class MoenApi:
             aws_session_token=session_token,
             region_name=REGION_NAME,
         )
+
+    def _start_refresh_credentials(self):
+        credentials = self.authenticate()
+
+        self._lambda_client = self._create_lambda_client(*credentials)
+        threading.Timer(REFRESH_TOKEN_INTERVAL, self._start_refresh_credentials).start()
+
+        return credentials
 
     def invoke_lambda_function(self, function_name: str, payload: dict = None):
         """Invoke a given function in the lambda client."""

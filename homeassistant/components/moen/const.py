@@ -9,6 +9,8 @@ TITLE_FIELD = "title"
 USERNAME_FIELD = "username"
 PASSWORD_FIELD = "password"
 
+REFRESH_TOKEN_INTERVAL = 55 * 60
+
 REGION_NAME = "us-east-2"
 USER_POOL_ID = "us-east-2_9puIPVyv1"
 APP_CLIENT_ID = "6qn9pep31dglq6ed4fvlq6rp5t"
