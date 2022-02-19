@@ -33,20 +33,11 @@ class MoenApi:
         self._password: str = password
         self._lambda_client: Session.client = None
         self._mqtt_connection: Connection = None
+        self._subscribers: dict = {}
 
     def connect(self) -> None:
         """Connect using the credentials."""
-        (
-            access_key_id,
-            secret_access_key,
-            session_token,
-        ) = self._start_refresh_credentials()
-
-        self._mqtt_connection = self._create_mqtt_connection(
-            access_key_id, secret_access_key, session_token
-        )
-
-        self._mqtt_connection.connect()
+        self._start_refresh_credentials()
 
     def disconnect(self):
         """Disconnect from all open sockets."""
@@ -115,6 +106,15 @@ class MoenApi:
     def _start_refresh_credentials(self):
         credentials = self.authenticate()
 
+        if self._mqtt_connection:
+            self._mqtt_connection.disconnect()
+        self._mqtt_connection = self._create_mqtt_connection(*credentials)
+        self._mqtt_connection.connect()
+
+        for topic, callback_set in self._subscribers.items():
+            for callback in callback_set:
+                self.subscribe_to_topic(topic, callback)
+
         self._lambda_client = self._create_lambda_client(*credentials)
         threading.Timer(REFRESH_TOKEN_INTERVAL, self._start_refresh_credentials).start()
 
@@ -132,10 +132,10 @@ class MoenApi:
 
     def subscribe_to_topic(self, topic: str, callback: Callable):
         """Subscribe a given topic."""
-        subscribe_future, _ = self._mqtt_connection.subscribe(
+        self._mqtt_connection.subscribe(
             topic=topic,
             qos=mqtt.QoS.AT_LEAST_ONCE,
             callback=callback,
         )
 
-        return lambda: subscribe_future.cancel()
+        self._subscribers.setdefault(topic, set()).add(callback)
