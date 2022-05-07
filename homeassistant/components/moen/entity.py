@@ -34,7 +34,7 @@ class MoenEntity(Entity):
         return self._device.connected
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the device attributes."""
         return self._device.extra_state_attributes
 
