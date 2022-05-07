@@ -54,7 +54,7 @@ class MoenFaucetDevice:
         self._device_meta["state"] = state
 
     @property
-    def attributes(self) -> dict:
+    def extra_state_attributes(self) -> dict:
         """Return the device attributes."""
         return self._device_meta
 
