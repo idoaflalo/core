@@ -36,7 +36,7 @@ class MoenEntity(Entity):
     @property
     def device_state_attributes(self):
         """Return the device attributes."""
-        return self._device.attributes
+        return self._device.extra_state_attributes
 
     @property
     def device_info(self):
