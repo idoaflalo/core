@@ -1,22 +1,32 @@
 """Switch platform integration for Numato USB GPIO expanders."""
+from __future__ import annotations
+
 import logging
 
 from numato_gpio import NumatoGpioError
 
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import (
     CONF_DEVICES,
     CONF_ID,
     CONF_SWITCHES,
     DEVICE_DEFAULT_NAME,
 )
-from homeassistant.helpers.entity import ToggleEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from . import CONF_INVERT_LOGIC, CONF_PORTS, DATA_API, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+def setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
+) -> None:
     """Set up the configured Numato USB GPIO switch ports."""
     if discovery_info is None:
         return
@@ -54,8 +64,10 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     add_entities(switches, True)
 
 
-class NumatoGpioSwitch(ToggleEntity):
+class NumatoGpioSwitch(SwitchEntity):
     """Representation of a Numato USB GPIO switch port."""
+
+    _attr_should_poll = False
 
     def __init__(self, name, device_id, port, invert_logic, api):
         """Initialize the port."""
@@ -70,11 +82,6 @@ class NumatoGpioSwitch(ToggleEntity):
     def name(self):
         """Return the name of the switch."""
         return self._name
-
-    @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
 
     @property
     def is_on(self):

@@ -5,12 +5,15 @@ import logging
 import async_timeout
 from requests.exceptions import ConnectionError as ConnectError, HTTPError, Timeout
 
-from homeassistant.components.sensor import STATE_CLASS_TOTAL_INCREASING, SensorEntity
-from homeassistant.const import (
-    ATTR_ATTRIBUTION,
-    DEVICE_CLASS_ENERGY,
-    ENERGY_KILO_WATT_HOUR,
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
 )
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import ATTR_ATTRIBUTION, ENERGY_KILO_WATT_HOUR
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -26,7 +29,9 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
     """Set up the SRP Energy Usage sensor."""
     # API object stored here by __init__.py
     is_time_of_use = False
@@ -78,6 +83,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class SrpEntity(SensorEntity):
     """Implementation of a Srp Energy Usage sensor."""
 
+    _attr_should_poll = False
+
     def __init__(self, coordinator):
         """Initialize the SrpEntity class."""
         self._name = SENSOR_NAME
@@ -121,11 +128,6 @@ class SrpEntity(SensorEntity):
         return None
 
     @property
-    def should_poll(self):
-        """No need to poll. Coordinator notifies entity of updates."""
-        return False
-
-    @property
     def extra_state_attributes(self):
         """Return the state attributes."""
         if not self.coordinator.data:
@@ -144,12 +146,12 @@ class SrpEntity(SensorEntity):
     @property
     def device_class(self):
         """Return the device class."""
-        return DEVICE_CLASS_ENERGY
+        return SensorDeviceClass.ENERGY
 
     @property
     def state_class(self):
         """Return the state class."""
-        return STATE_CLASS_TOTAL_INCREASING
+        return SensorStateClass.TOTAL_INCREASING
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""

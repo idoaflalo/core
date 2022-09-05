@@ -1,4 +1,6 @@
 """Support for SCSGate switches."""
+from __future__ import annotations
+
 import logging
 
 from scsgate.messages import ScenarioTriggeredMessage, StateMessage
@@ -7,7 +9,10 @@ import voluptuous as vol
 
 from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_STATE, CONF_DEVICES, CONF_NAME
+from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from . import CONF_SCS_ID, DOMAIN, SCSGATE_SCHEMA
 
@@ -21,7 +26,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+def setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
+) -> None:
     """Set up the SCSGate switches."""
     logger = logging.getLogger(__name__)
     scsgate = hass.data[DOMAIN]
@@ -81,6 +91,8 @@ def _setup_scenario_switches(logger, config, scsgate, hass):
 class SCSGateSwitch(SwitchEntity):
     """Representation of a SCSGate switch."""
 
+    _attr_should_poll = False
+
     def __init__(self, scs_id, name, logger, scsgate):
         """Initialize the switch."""
         self._name = name
@@ -93,11 +105,6 @@ class SCSGateSwitch(SwitchEntity):
     def scs_id(self):
         """Return the SCS ID."""
         return self._scs_id
-
-    @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
 
     @property
     def name(self):

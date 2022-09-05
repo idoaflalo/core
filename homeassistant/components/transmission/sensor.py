@@ -6,9 +6,11 @@ from contextlib import suppress
 from transmissionrpc.torrent import Torrent
 
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, DATA_RATE_MEGABYTES_PER_SECOND, STATE_IDLE
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import TransmissionClient
 from .const import (
@@ -20,7 +22,11 @@ from .const import (
 )
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Set up the Transmission sensors."""
 
     tm_client = hass.data[DOMAIN][config_entry.entry_id]
@@ -42,6 +48,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 class TransmissionSensor(SensorEntity):
     """A base class for all Transmission sensors."""
+
+    _attr_should_poll = False
 
     def __init__(self, tm_client, client_name, sensor_name, sub_type=None):
         """Initialize the sensor."""
@@ -65,11 +73,6 @@ class TransmissionSensor(SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         return self._state
-
-    @property
-    def should_poll(self):
-        """Return the polling requirement for this sensor."""
-        return False
 
     @property
     def available(self):

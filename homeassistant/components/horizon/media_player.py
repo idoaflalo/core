@@ -1,23 +1,21 @@
 """Support for the Unitymedia Horizon HD Recorder."""
+from __future__ import annotations
+
 from datetime import timedelta
 import logging
+from typing import Any
 
 from horimote import Client, keys
 from horimote.exceptions import AuthenticationError
 import voluptuous as vol
 
 from homeassistant import util
-from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
-from homeassistant.components.media_player.const import (
-    MEDIA_TYPE_CHANNEL,
-    SUPPORT_NEXT_TRACK,
-    SUPPORT_PAUSE,
-    SUPPORT_PLAY,
-    SUPPORT_PLAY_MEDIA,
-    SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_TURN_OFF,
-    SUPPORT_TURN_ON,
+from homeassistant.components.media_player import (
+    PLATFORM_SCHEMA,
+    MediaPlayerEntity,
+    MediaPlayerEntityFeature,
 )
+from homeassistant.components.media_player.const import MEDIA_TYPE_CHANNEL
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
@@ -26,8 +24,11 @@ from homeassistant.const import (
     STATE_PAUSED,
     STATE_PLAYING,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,15 +38,6 @@ DEFAULT_PORT = 5900
 MIN_TIME_BETWEEN_FORCED_SCANS = timedelta(seconds=1)
 MIN_TIME_BETWEEN_SCANS = timedelta(seconds=10)
 
-SUPPORT_HORIZON = (
-    SUPPORT_NEXT_TRACK
-    | SUPPORT_PAUSE
-    | SUPPORT_PLAY
-    | SUPPORT_PLAY_MEDIA
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_TURN_ON
-    | SUPPORT_TURN_OFF
-)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -56,7 +48,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+def setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
+) -> None:
     """Set up the Horizon platform."""
 
     host = config[CONF_HOST]
@@ -81,6 +78,16 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class HorizonDevice(MediaPlayerEntity):
     """Representation of a Horizon HD Recorder."""
 
+    _attr_supported_features = (
+        MediaPlayerEntityFeature.NEXT_TRACK
+        | MediaPlayerEntityFeature.PAUSE
+        | MediaPlayerEntityFeature.PLAY
+        | MediaPlayerEntityFeature.PLAY_MEDIA
+        | MediaPlayerEntityFeature.PREVIOUS_TRACK
+        | MediaPlayerEntityFeature.TURN_ON
+        | MediaPlayerEntityFeature.TURN_OFF
+    )
+
     def __init__(self, client, name, remote_keys):
         """Initialize the remote."""
         self._client = client
@@ -98,13 +105,8 @@ class HorizonDevice(MediaPlayerEntity):
         """Return the state of the device."""
         return self._state
 
-    @property
-    def supported_features(self):
-        """Flag media player features that are supported."""
-        return SUPPORT_HORIZON
-
     @util.Throttle(MIN_TIME_BETWEEN_SCANS, MIN_TIME_BETWEEN_FORCED_SCANS)
-    def update(self):
+    def update(self) -> None:
         """Update State using the media server running on the Horizon."""
         try:
             if self._client.is_powered_on():
@@ -114,37 +116,37 @@ class HorizonDevice(MediaPlayerEntity):
         except OSError:
             self._state = STATE_OFF
 
-    def turn_on(self):
+    def turn_on(self) -> None:
         """Turn the device on."""
         if self._state == STATE_OFF:
             self._send_key(self._keys.POWER)
 
-    def turn_off(self):
+    def turn_off(self) -> None:
         """Turn the device off."""
         if self._state != STATE_OFF:
             self._send_key(self._keys.POWER)
 
-    def media_previous_track(self):
+    def media_previous_track(self) -> None:
         """Channel down."""
         self._send_key(self._keys.CHAN_DOWN)
         self._state = STATE_PLAYING
 
-    def media_next_track(self):
+    def media_next_track(self) -> None:
         """Channel up."""
         self._send_key(self._keys.CHAN_UP)
         self._state = STATE_PLAYING
 
-    def media_play(self):
+    def media_play(self) -> None:
         """Send play command."""
         self._send_key(self._keys.PAUSE)
         self._state = STATE_PLAYING
 
-    def media_pause(self):
+    def media_pause(self) -> None:
         """Send pause command."""
         self._send_key(self._keys.PAUSE)
         self._state = STATE_PAUSED
 
-    def media_play_pause(self):
+    def media_play_pause(self) -> None:
         """Send play/pause command."""
         self._send_key(self._keys.PAUSE)
         if self._state == STATE_PAUSED:
@@ -152,7 +154,7 @@ class HorizonDevice(MediaPlayerEntity):
         else:
             self._state = STATE_PAUSED
 
-    def play_media(self, media_type, media_id, **kwargs):
+    def play_media(self, media_type: str, media_id: str, **kwargs: Any) -> None:
         """Play media / switch to channel."""
         if MEDIA_TYPE_CHANNEL == media_type:
             try:
@@ -192,12 +194,12 @@ class HorizonDevice(MediaPlayerEntity):
             try:
                 self._client.connect()
                 self._client.authorize()
-            except AuthenticationError as msg:
-                _LOGGER.error("Authentication to %s failed: %s", self._name, msg)
+            except AuthenticationError as msg2:
+                _LOGGER.error("Authentication to %s failed: %s", self._name, msg2)
                 return
-            except OSError as msg:
+            except OSError as msg2:
                 # occurs if horizon box is offline
-                _LOGGER.error("Reconnect to %s failed: %s", self._name, msg)
+                _LOGGER.error("Reconnect to %s failed: %s", self._name, msg2)
                 return
 
             self._send(key=key, channel=channel)

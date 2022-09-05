@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from pylitterbot import Account, Robot
+from pylitterbot import Account, LitterRobot3, Robot
 from pylitterbot.exceptions import InvalidCommandException
 import pytest
 
@@ -23,7 +23,7 @@ def create_mock_robot(
     if not robot_data:
         robot_data = {}
 
-    robot = Robot(data={**ROBOT_DATA, **robot_data})
+    robot = LitterRobot3(data={**ROBOT_DATA, **robot_data})
     robot.start_cleaning = AsyncMock(side_effect=side_effect)
     robot.set_power_status = AsyncMock(side_effect=side_effect)
     robot.reset_waste_drawer = AsyncMock(side_effect=side_effect)
@@ -31,6 +31,7 @@ def create_mock_robot(
     robot.set_night_light = AsyncMock(side_effect=side_effect)
     robot.set_panel_lockout = AsyncMock(side_effect=side_effect)
     robot.set_wait_time = AsyncMock(side_effect=side_effect)
+    robot.refresh = AsyncMock(side_effect=side_effect)
     return robot
 
 
@@ -66,6 +67,12 @@ def mock_account_with_sleeping_robot() -> MagicMock:
 
 
 @pytest.fixture
+def mock_account_with_sleep_disabled_robot() -> MagicMock:
+    """Mock a Litter-Robot account with a robot that has sleep mode disabled."""
+    return create_mock_account({"sleepModeActive": "0"})
+
+
+@pytest.fixture
 def mock_account_with_error() -> MagicMock:
     """Mock a Litter-Robot account with error."""
     return create_mock_account({"unitStatus": "BR"})
@@ -92,8 +99,8 @@ async def setup_integration(
     with patch(
         "homeassistant.components.litterrobot.hub.Account", return_value=mock_account
     ), patch(
-        "homeassistant.components.litterrobot.PLATFORMS",
-        [platform_domain] if platform_domain else [],
+        "homeassistant.components.litterrobot.PLATFORMS_BY_TYPE",
+        {Robot: (platform_domain,)} if platform_domain else {},
     ):
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
