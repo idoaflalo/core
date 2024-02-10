@@ -4,8 +4,8 @@
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/moen",
   "requirements": [
-    "awsiotsdk==1.6.2",
-    "boto3==1.18.19"
+    "awsiotsdk==1.21.0",
+    "boto3==1.33.2"
   ],
   "ssdp": [],
   "zeroconf": [],
