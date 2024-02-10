@@ -1,6 +1,6 @@
 """Platform for sensor integration."""
-
-from homeassistant.const import DEVICE_CLASS_BATTERY, PERCENTAGE
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.const import PERCENTAGE
 
 from .const import ATTR_DEVICE_LIST, DOMAIN
 from .device import MoenFaucetDevice
@@ -23,7 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 class FaucetBatterySensor(MoenEntity):
     """Representation of a Battery Sensor."""
 
-    device_class = DEVICE_CLASS_BATTERY
+    device_class = SensorDeviceClass.BATTERY
 
     @property
     def unique_id(self):
